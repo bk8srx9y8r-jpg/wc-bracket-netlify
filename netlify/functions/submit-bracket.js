@@ -1,6 +1,6 @@
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_PARTICIPANTS_TABLE = process.env.AIRTABLE_PARTICIPANTS_TABLE || 'tblzGNRjUuXLe3zdD';
+const AIRTABLE_PARTICIPANTS_TABLE = process.env.AIRTABLE_PARTICIPANTS_TABLE;
 
 function response(statusCode, body) {
   return {
@@ -15,7 +15,7 @@ export default async (request) => {
     return response(405, { error: 'Method not allowed.' });
   }
 
-  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
+  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID || !AIRTABLE_PARTICIPANTS_TABLE) {
     return response(500, { error: 'Missing Airtable environment variables.' });
   }
 
@@ -50,6 +50,9 @@ export default async (request) => {
 
     return response(200, { success: true, record: data.records?.[0] || null });
   } catch (error) {
+    return response(500, { error: error.message || 'Unexpected server error while submitting bracket.' });
+  }
+};
     return response(500, { error: error.message || 'Unexpected server error while submitting bracket.' });
   }
 };
