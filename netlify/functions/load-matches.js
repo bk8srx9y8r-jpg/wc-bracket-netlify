@@ -1,6 +1,6 @@
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_MATCHES_TABLE = process.env.AIRTABLE_MATCHES_TABLE || 'tblBBIQJvHooxbQyA';
+const AIRTABLE_MATCHES_TABLE = process.env.AIRTABLE_MATCHES_TABLE;
 
 function response(statusCode, body) {
   return {
@@ -11,7 +11,7 @@ function response(statusCode, body) {
 }
 
 export default async () => {
-  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
+  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID || !AIRTABLE_MATCHES_TABLE) {
     return response(500, { error: 'Missing Airtable environment variables.' });
   }
 
@@ -34,5 +34,7 @@ export default async () => {
     return response(200, { records: data.records || [] });
   } catch (error) {
     return response(500, { error: error.message || 'Unexpected server error while loading matches.' });
+  }
+};: error.message || 'Unexpected server error while loading matches.' });
   }
 };
