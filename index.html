@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NYC City Hall · World Cup 2026 Bracket Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #00542B; --green-mid: #006635; --green-light: #e8f4ee; --gold: #C8973A;
+    --gold-light: #fdf5e6; --white: #ffffff; --gray-50: #f8f8f6; --gray-100: #efefec;
+    --gray-300: #ccc; --gray-500: #888; --gray-700: #444; --gray-900: #1a1a1a;
+    --red: #c0392b; --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-hover: 0 4px 20px rgba(0,0,0,0.14);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--gray-50); color: var(--gray-900); min-height: 100vh; }
+  .site-header { background: var(--green); color: white; padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .site-header .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.04em; color: white; line-height: 1; }
+  .site-header .logo span { color: var(--gold); }
+  .site-header .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.2); }
+  .site-header .subtitle { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .progress-wrap { background: white; border-bottom: 1px solid var(--gray-100); padding: 0 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .progress-track { display: flex; align-items: stretch; max-width: 760px; margin: 0 auto; min-width: max-content; }
+  .prog-step { display: flex; flex-direction: column; align-items: center; padding: 12px 20px 10px; gap: 6px; position: relative; min-width: 72px; }
+  .prog-step::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: transparent; border-radius: 2px; }
+  .prog-step.active::after { background: var(--green); }
+  .prog-step.done::after { background: var(--gold); }
+  .prog-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--gray-500); transition: all 0.2s; }
+  .prog-step.done .prog-dot { background: var(--gold); color: white; }
+  .prog-step.active .prog-dot { background: var(--green); color: white; }
+  .prog-label { font-size: 11px; color: var(--gray-500); font-weight: 500; white-space: nowrap; }
+  .prog-step.active .prog-label { color: var(--green); font-weight: 600; }
+  .prog-step.done .prog-label { color: var(--gray-700); }
+  .main { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+  .step-header { margin-bottom: 28px; }
+  .step-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 40px; letter-spacing: 0.03em; color: var(--green); line-height: 1; }
+  .step-header p { margin-top: 6px; font-size: 15px; color: var(--gray-500); font-weight: 400; }
+  .step-header .pick-counter { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--gold); background: var(--gold-light); padding: 4px 12px; border-radius: 20px; }
+  .info-card { background: white; border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); }
+  .field-group { margin-bottom: 20px; }
+  .field-group label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field-group input, .field-group select { width: 100%; padding: 12px 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--gray-900); background: white; transition: border-color 0.15s; outline: none; appearance: none; }
+  .field-group input:focus, .field-group select:focus { border-color: var(--green); }
+  .field-hint { font-size: 12px; color: var(--gray-500); margin-top: 5px; }
+  .matches-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 580px) { .matches-grid { grid-template-columns: repeat(2, 1fr); } }
+  .match-card { background: white; border: 1.5px solid var(--gray-100); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: box-shadow 0.15s; }
+  .match-card:hover { box-shadow: var(--shadow-hover); }
+  .match-card.picked { border-color: var(--green); }
+  .match-meta { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px; border-bottom: 1px solid var(--gray-100); }
+  .match-num { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); }
+  .match-status { font-size: 11px; font-weight: 600; color: var(--green); }
+  .match-status.pending { color: var(--gold); }
+  .match-teams { display: flex; flex-direction: column; gap: 0; }
+  .team-btn { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: none; border: none; cursor: pointer; text-align: left; width: 100%; transition: background 0.12s; border-bottom: 1px solid var(--gray-100); font-family: 'DM Sans', sans-serif; }
+  .team-btn:last-child { border-bottom: none; }
+  .team-btn:hover { background: var(--gray-50); }
+  .team-btn.selected { background: var(--green-light); }
+  .team-btn.other-selected { opacity: 0.45; }
+  .team-flag { width: 28px; height: 20px; border-radius: 3px; background: var(--gray-100); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; overflow: hidden; }
+  .team-name { font-size: 15px; font-weight: 500; color: var(--gray-900); flex: 1; }
+  .team-btn.selected .team-name { font-weight: 600; color: var(--green); }
+  .check-icon { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--gray-300); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s; }
+  .team-btn.selected .check-icon { background: var(--green); border-color: var(--green); }
+  .check-icon svg { display: none; }
+  .team-btn.selected .check-icon svg { display: block; }
+  .vs-divider { display: flex; align-items: center; justify-content: center; padding: 4px 0; background: var(--gray-50); border-top: 1px solid var(--gray-100); border-bottom: 1px solid var(--gray-100); }
+  .vs-text { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--gray-500); }
+  .awards-grid { display: grid; gap: 20px; }
+  .award-card { background: white; border: 1.5px solid var(--gray-100); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+  .award-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .award-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--gold-light); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .award-title { font-size: 16px; font-weight: 600; }
+  .award-desc { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+  .award-card input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s; }
+  .award-card input:focus { border-color: var(--gold); }
+  .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-100); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); }
+  .btn { padding: 12px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-back { background: none; color: var(--gray-700); border: 1.5px solid var(--gray-300); }
+  .btn-back:hover { background: var(--gray-50); }
+  .btn-next { background: var(--green); color: white; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-next:hover { background: var(--green-mid); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-submit { background: var(--gold); color: white; min-width: 160px; font-size: 16px; }
+  .btn-submit:hover { background: #b5862e; }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .nav-pick-count { font-size: 13px; color: var(--gray-500); }
+  #loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 20px; color: var(--gray-500); }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--gray-100); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #thank-you-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; padding: 40px 20px; gap: 16px; }
+  .trophy { font-size: 64px; animation: bounce 1s ease-out; }
+  @keyframes bounce { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  #thank-you-screen h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--green); letter-spacing: 0.03em; }
+  #thank-you-screen p { font-size: 16px; color: var(--gray-500); max-width: 400px; }
+  .error-msg { background: #fef2f2; border: 1px solid #fecaca; color: var(--red); border-radius: 8px; padding: 12px 16px; font-size: 14px; margin-bottom: 16px; display: none; }
+  .error-msg.visible { display: block; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">NYC City Hall <span>·</span> World Cup</div>
+  <div class="divider"></div>
+  <div class="subtitle">2026 Bracket Challenge</div>
+</header>
+
+<div class="progress-wrap hidden" id="progress-wrap">
+  <div class="progress-track" id="progress-track"></div>
+</div>
+
+<main class="main" id="main-content">
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div>Loading bracket...</div>
+  </div>
+  <div id="form-area" class="hidden"></div>
+  <div id="thank-you-screen" class="hidden">
+    <div class="trophy">🏆</div>
+    <h1>You're in!</h1>
+    <p>Your bracket has been submitted. Good luck — may the best picks win.</p>
+  </div>
+</main>
+
+<nav class="nav-bar hidden" id="nav-bar">
+  <button class="btn btn-back" id="btn-back">← Back</button>
+  <div class="nav-pick-count" id="nav-label"></div>
+  <button class="btn btn-next" id="btn-next">Next →</button>
+</nav>
+
+<script>
+const PICK_FIELDS = {
+  R32_M1: 'fldWPrVYdTUhClfEH', R32_M2: 'fldiXhPpg5yuLcEFh',
+  R32_M3: 'fldZwKOEGJY3Wcvdg', R32_M4: 'fldsJF8OTCo5nDD7q',
+  R32_M5: 'fldbc4wsS1mzq0tQH', R32_M6: 'fldhxIKVELYpwVlzZ',
+  R32_M7: 'fldFbSR05rSzJRNZK', R32_M8: 'fldyQZc3BUBJrrn0v',
+  R32_M9: 'fldGYZU6XOdUmBR5L', R32_M10: 'fldRkfXrZzUnZFP0A',
+  R32_M11: 'fldOKywN3prjbar8e', R32_M12: 'fldEG4YHNfPQdgVlY',
+  R32_M13: 'fldIlDlM8WMamQwgJ', R32_M14: 'fld0T9nzcY8TBhmiW',
+  R32_M15: 'fldqENmi3j4kIfcj9', R32_M16: 'fldF0Sqsos4Vmcpr4',
+  R16_M1: 'fldltc82dsLPO98Kw', R16_M2: 'fldFynxtG9COTQsdi',
+  R16_M3: 'fldAByaoS71EKnVUK', R16_M4: 'fldRY5mdJ0HpfcK86',
+  R16_M5: 'fldMF9EnJ2lZBymCo', R16_M6: 'fldsMolCDpTE7wD0a',
+  R16_M7: 'fldrsstNWsff5rwMM', R16_M8: 'fldWDlFcZtSXgZwrB',
+  QF_M1: 'fld3rXWtxTwbeKv1A', QF_M2: 'fldsw8ykC9aX2Ptrx',
+  QF_M3: 'fldWibM7rLZmtJwwo', QF_M4: 'fldhEFSrY4DIx6RZP',
+  SF_M1: 'fldnbXZAkdnXL5RSS', SF_M2: 'fldxHtw2vlSL6S9Zc',
+  Final: 'fldkhLSpSmaimECHx',
+};
+
+const STEPS = [
+  { id: 'info',   label: 'Your Info',    title: 'Welcome!',       desc: 'Tell us who you are to get started.' },
+  { id: 'r32',    label: 'Round of 32',  title: 'Round of 32',    desc: 'Pick a winner for each of the 16 matches.', round: 'Round of 32' },
+  { id: 'r16',    label: 'Round of 16',  title: 'Round of 16',    desc: 'Only your Round of 32 picks advance.', round: 'Round of 16' },
+  { id: 'qf',     label: 'Quarters',     title: 'Quarterfinals',  desc: 'Four matches — pick your four semifinalists.', round: 'Quarterfinal' },
+  { id: 'sf',     label: 'Semis',        title: 'Semifinals',     desc: 'Who makes it to the Final?', round: 'Semifinal' },
+  { id: 'final',  label: 'The Final',    title: 'The Final',      desc: 'Who lifts the trophy?', round: 'Final' },
+  { id: 'awards', label: 'Awards',       title: 'Individual Awards', desc: 'Predict the tournament\'s top individual honors.' },
+];
+
+const FLAGS = {
+  'USA': '🇺🇸', 'United States': '🇺🇸', 'Mexico': '🇲🇽', 'Canada': '🇨🇦',
+  'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷', 'England': '🏴',
+  'Spain': '🇪🇸', 'Germany': '🇩🇪', 'Portugal': '🇵🇹', 'Netherlands': '🇳🇱',
+  'Belgium': '🇧🇪', 'Croatia': '🇭🇷', 'Morocco': '🇲🇦', 'Japan': '🇯🇵',
+  'South Korea': '🇰🇷', 'Australia': '🇦🇺', 'Senegal': '🇸🇳', 'Ghana': '🇬🇭',
+  'Nigeria': '🇳🇬', 'Ecuador': '🇪🇨', 'Uruguay': '🇺🇾', 'Colombia': '🇨🇴',
+  'Chile': '🇨🇱', 'Poland': '🇵🇱', 'Switzerland': '🇨🇭', 'Denmark': '🇩🇰',
+  'Serbia': '🇷🇸', 'Italy': '🇮🇹', 'Qatar': '🇶🇦', 'Saudi Arabia': '🇸🇦',
+  'Iran': '🇮🇷', 'Tunisia': '🇹🇳', 'Cameroon': '🇨🇲', 'Costa Rica': '🇨🇷',
+};
+function flag(name) { return FLAGS[name] || '⚽'; }
+
+const state = {
+  step: 0,
+  matches: {},
+  feeders: {},
+  picks: {},
+  user: { name: '', email: '', office: '' },
+  awards: { goldenBall: '', goldenBoot: '', goldenGlove: '' },
+  submitting: false,
+};
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options,
+  });
+
+  const text = await res.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+  if (!res.ok) {
+    throw new Error(data.error || `Request failed (${res.status})`);
+  }
+  return data;
+}
+
+async function loadMatches() {
+  const data = await api('/.netlify/functions/load-matches');
+  for (const rec of data.records) {
+    const f = rec.fields || {};
+    const id = f['Match ID'];
+    if (!id) continue;
+    state.matches[id] = {
+      id,
+      round: f['Round'] || '',
+      matchNum: f['Match Number'] || 0,
+      team1: f['Team 1'] || 'TBD',
+      team2: f['Team 2'] || 'TBD',
+      label: f['Match Label'] || id,
+      nextMatchId: f['Next Match ID'] || null,
+      nextSlot: f['Next Slot'] || 'Team 1',
+      sortOrder: f['Sort Order'] || 0,
+    };
+  }
+
+  for (const [id, m] of Object.entries(state.matches)) {
+    if (m.nextMatchId) {
+      if (!state.feeders[m.nextMatchId]) state.feeders[m.nextMatchId] = [null, null];
+      const slot = m.nextSlot === 'Team 1' ? 0 : 1;
+      state.feeders[m.nextMatchId][slot] = id;
+    }
+  }
+}
+
+function getRoundMatches(roundName) {
+  return Object.values(state.matches)
+    .filter(m => m.round === roundName)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+function getTeams(matchId) {
+  const m = state.matches[matchId];
+  if (!m) return ['TBD', 'TBD'];
+  if (m.round === 'Round of 32') return [m.team1, m.team2];
+  const [f0, f1] = state.feeders[matchId] || [null, null];
+  const t1 = f0 && state.picks[f0] ? state.picks[f0] : '?';
+  const t2 = f1 && state.picks[f1] ? state.picks[f1] : '?';
+  return [t1, t2];
+}
+
+function clearDownstreamPicks(matchId) {
+  const m = state.matches[matchId];
+  if (!m || !m.nextMatchId) return;
+  const nextId = m.nextMatchId;
+  if (state.picks[nextId]) {
+    delete state.picks[nextId];
+    clearDownstreamPicks(nextId);
+  }
+}
+
+function selectPick(matchId, team) {
+  const prev = state.picks[matchId];
+  state.picks[matchId] = team;
+  if (prev !== team) clearDownstreamPicks(matchId);
+  renderStep();
+}
+
+function countRoundPicks(roundName) {
+  const matches = getRoundMatches(roundName);
+  const made = matches.filter(m => state.picks[m.id]).length;
+  return { made, total: matches.length };
+}
+
+function canAdvance() {
+  const step = STEPS[state.step];
+  if (step.id === 'info') {
+    return state.user.name.trim() && state.user.email.trim().includes('@') && state.user.office.trim();
+  }
+  if (step.round) {
+    const { made, total } = countRoundPicks(step.round);
+    return made === total;
+  }
+  if (step.id === 'awards') return true;
+  return false;
+}
+
+function renderProgress() {
+  const track = document.getElementById('progress-track');
+  track.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'prog-step' + (i === state.step ? ' active' : '') + (i < state.step ? ' done' : '');
+    div.innerHTML = `
+      <div class="prog-dot">${i < state.step ? '✓' : i + 1}</div>
+      <div class="prog-label">${s.label}</div>
+    `;
+    track.appendChild(div);
+  });
+}
+
+function renderMatchCard(matchId) {
+  const [t1, t2] = getTeams(matchId);
+  const pick = state.picks[matchId];
+  const m = state.matches[matchId];
+  const picked = !!pick;
+
+  return `
+    <div class="match-card ${picked ? 'picked' : ''}">
+      <div class="match-meta">
+        <span class="match-num">${m.label}</span>
+        <span class="match-status ${picked ? '' : 'pending'}">${picked ? '✓ Picked' : 'Pick winner'}</span>
+      </div>
+      <div class="match-teams">
+        <button class="team-btn ${pick === t1 ? 'selected' : pick && pick !== t1 ? 'other-selected' : ''}" onclick="selectPick('${matchId}', ${JSON.stringify(t1)})">
+          <div class="team-flag">${flag(t1)}</div>
+          <span class="team-name">${t1}</span>
+          <div class="check-icon">
+            <svg width="10" height="8" fill="none" viewBox="0 0 10 8">
+              <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+        <div class="vs-divider"><span class="vs-text">VS</span></div>
+        <button class="team-btn ${pick === t2 ? 'selected' : pick && pick !== t2 ? 'other-selected' : ''}" onclick="selectPick('${matchId}', ${JSON.stringify(t2)})">
+          <div class="team-flag">${flag(t2)}</div>
+          <span class="team-name">${t2}</span>
+          <div class="check-icon">
+            <svg width="10" height="8" fill="none" viewBox="0 0 10 8">
+              <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderStep() {
+  const step = STEPS[state.step];
+  const area = document.getElementById('form-area');
+
+  let html = `
+    <div class="step-header">
+      <h1>${step.title}</h1>
+      <p>${step.desc}</p>
+  `;
+
+  if (step.round) {
+    const { made, total } = countRoundPicks(step.round);
+    html += `<div class="pick-counter">⚽ ${made} of ${total} picked</div>`;
+  }
+  html += `</div><div class="error-msg" id="step-error"></div>`;
+
+  if (step.id === 'info') {
+    html += `
+      <div class="info-card">
+        <div class="field-group">
+          <label>Full Name *</label>
+          <input type="text" id="f-name" placeholder="Your name" value="${esc(state.user.name)}" oninput="state.user.name=this.value; updateNav()">
+        </div>
+        <div class="field-group">
+          <label>Email *</label>
+          <input type="email" id="f-email" placeholder="you@nyc.gov" value="${esc(state.user.email)}" oninput="state.user.email=this.value; updateNav()">
+        </div>
+        <div class="field-group">
+          <label>Office / Unit *</label>
+          <input type="text" id="f-office" placeholder="e.g. Mayor's Office, DOT, NYPD…" value="${esc(state.user.office)}" oninput="state.user.office=this.value; updateNav()">
+          <div class="field-hint">Enter your department or office name.</div>
+        </div>
+      </div>
+    `;
+  } else if (step.round) {
+    const matches = getRoundMatches(step.round);
+    html += `<div class="matches-grid">`;
+    for (const m of matches) html += renderMatchCard(m.id);
+    html += `</div>`;
+  } else if (step.id === 'awards') {
+    html += `
+      <div class="awards-grid">
+        <div class="award-card">
+          <div class="award-header"><div class="award-icon">🏅</div><div><div class="award-title">Golden Ball</div><div class="award-desc">Best player of the tournament</div></div></div>
+          <input type="text" id="f-ball" placeholder="Player name" value="${esc(state.awards.goldenBall)}" oninput="state.awards.goldenBall=this.value">
+        </div>
+        <div class="award-card">
+          <div class="award-header"><div class="award-icon">👟</div><div><div class="award-title">Golden Boot</div><div class="award-desc">Top scorer of the tournament</div></div></div>
+          <input type="text" id="f-boot" placeholder="Player name" value="${esc(state.awards.goldenBoot)}" oninput="state.awards.goldenBoot=this.value">
+        </div>
+        <div class="award-card">
+          <div class="award-header"><div class="award-icon">🧤</div><div><div class="award-title">Golden Glove</div><div class="award-desc">Best goalkeeper of the tournament</div></div></div>
+          <input type="text" id="f-glove" placeholder="Player name" value="${esc(state.awards.goldenGlove)}" oninput="state.awards.goldenGlove=this.value">
+        </div>
+      </div>
+    `;
+  }
+
+  area.innerHTML = html;
+  renderProgress();
+  updateNav();
+}
+
+function esc(str) {
+  return String(str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function updateNav() {
+  const btnBack = document.getElementById('btn-back');
+  const btnNext = document.getElementById('btn-next');
+  const navLabel = document.getElementById('nav-label');
+  const step = STEPS[state.step];
+
+  btnBack.style.visibility = state.step === 0 ? 'hidden' : 'visible';
+  btnNext.disabled = !canAdvance();
+
+  const isLast = state.step === STEPS.length - 1;
+  if (isLast) {
+    btnNext.textContent = state.submitting ? 'Submitting…' : 'Submit Bracket 🏆';
+    btnNext.className = 'btn btn-submit';
+  } else {
+    btnNext.innerHTML = 'Next →';
+    btnNext.className = 'btn btn-next';
+  }
+
+  if (step.round) {
+    const { made, total } = countRoundPicks(step.round);
+    navLabel.textContent = made < total ? `${total - made} picks remaining` : 'All picks made ✓';
+    navLabel.style.color = made < total ? '#888' : '#00542B';
+  } else {
+    navLabel.textContent = '';
+  }
+}
+
+async function goNext() {
+  if (!canAdvance()) return;
+  if (state.step === STEPS.length - 1) {
+    await submitBracket();
+    return;
+  }
+  state.step++;
+  renderStep();
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (state.step === 0) return;
+  state.step--;
+  renderStep();
+  window.scrollTo(0, 0);
+}
+
+async function submitBracket() {
+  if (state.submitting) return;
+  state.submitting = true;
+  updateNav();
+
+  const fields = {
+    'fldDwLpP0cnkH0qYX': state.user.name,
+    'fldM5u16y3q6MkSBk': state.user.email,
+    'fldxLcf9nEHthI9gT': state.user.office,
+    'flddPpVPgcLZVSgBI': state.awards.goldenBall,
+    'fldL2Fc3GEZb5f0pk': state.awards.goldenBoot,
+    'fldgoqhcpBNSuwhSG': state.awards.goldenGlove,
+  };
+
+  for (const [matchId, teamName] of Object.entries(state.picks)) {
+    const fieldId = PICK_FIELDS[matchId];
+    if (fieldId && teamName) fields[fieldId] = teamName;
+  }
+
+  try {
+    await api('/.netlify/functions/submit-bracket', {
+      method: 'POST',
+      body: JSON.stringify({ fields }),
+    });
+
+    document.getElementById('form-area').classList.add('hidden');
+    document.getElementById('nav-bar').classList.add('hidden');
+    document.getElementById('progress-wrap').classList.add('hidden');
+    document.getElementById('thank-you-screen').classList.remove('hidden');
+  } catch (e) {
+    state.submitting = false;
+    const errDiv = document.getElementById('step-error');
+    if (errDiv) {
+      errDiv.textContent = 'Submission error: ' + e.message + '. Please try again.';
+      errDiv.classList.add('visible');
+    }
+    updateNav();
+  }
+}
+
+document.getElementById('btn-next').addEventListener('click', goNext);
+document.getElementById('btn-back').addEventListener('click', goBack);
+
+async function init() {
+  try {
+    await loadMatches();
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('nav-bar').classList.remove('hidden');
+    document.getElementById('progress-wrap').classList.remove('hidden');
+    document.getElementById('form-area').classList.remove('hidden');
+    renderStep();
+  } catch (e) {
+    document.getElementById('loading-screen').innerHTML = `
+      <div style="max-width:520px;text-align:center;padding:0 24px">
+        <div style="font-size:42px;margin-bottom:12px">⚠️</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:#00542B;letter-spacing:0.03em;margin-bottom:8px">Connection Error</h2>
+        <p style="font-size:14px;color:#666;line-height:1.6">
+          The site could not load the bracket data. Check your Netlify environment variables and function deployment.
+        </p>
+        <p style="font-size:13px;color:#c0392b;margin-top:14px">${esc(e.message)}</p>
+      </div>
+    `;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
